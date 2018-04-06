@@ -78,10 +78,9 @@ training <- trainingdata[trainChunk,]
 validation <- trainingdata[-trainChunk,]
 ```
 
-We could also see the boxplot in appendix A showing this initial feeling.
 
 ### 3 Models creation
-We are going to create 3 different types of models.
+We are going to create 3 different types of models, and then analyze which is the accuracy of each of them. If needed, we could decide to combine several to obtain a new model with higher accuracy.
 
 Random Forest
 

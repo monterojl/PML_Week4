@@ -160,11 +160,10 @@ trainingdata&lt;-trainingdata[,colSums(is.na(trainingdata)) == 0]</code></pre>
 <pre class="r"><code>trainChunk &lt;- createDataPartition(y=trainingdata$classe,p=.70,list=F)
 training &lt;- trainingdata[trainChunk,]
 validation &lt;- trainingdata[-trainChunk,]</code></pre>
-<p>We could also see the boxplot in appendix A showing this initial feeling.</p>
 </div>
 <div id="models-creation" class="section level3">
 <h3>3 Models creation</h3>
-<p>We are going to create 3 different types of models.</p>
+<p>We are going to create 3 different types of models, and then analyze which is the accuracy of each of them. If needed, we could decide to combine several to obtain a new model with higher accuracy.</p>
 <p>Random Forest</p>
 <pre class="r"><code>mod_rf&lt;-train(classe~., method=&quot;rf&quot;, data=training)</code></pre>
 <p>Boosted Predictor</p>
