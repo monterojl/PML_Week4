@@ -1,0 +1,99 @@
+---
+Title:
+output: 
+  html_document:
+    keep_md: true
+---
+*Montero, Jose*
+*Apr 4th, 2018*
+
+## Classe Prediction Model
+### 0 Executive summary
+
+The goal of your project is to predict the manner in which they people engaged in a personal activity device test did the exercise. This is the "classe" variable in the training set. 
+
+The results of the analysis show that using a Random Forest algorithm, the accuracy obtained is very high (0.993, while the other 2 models studied remain at least 4 points below.
+
+### 1 Data load and processing
+First of all it is needed to load the packages that will be used later during the analysis, and also read the data files. Also a seed is set to allow reproducibility.
+
+```{r prerrequisites, message = FALSE}
+setwd("G:/My Drive/R/Rprogramming scripts/8.week4 practices")
+library(gbm)
+library(caret)
+library(dplyr)
+library(knitr)
+opts_chunk$set(cache=TRUE, cache.path = 'PML_cache/')
+set.seed(4343)
+```
+```{r load data, message = FALSE}
+trainingdata<-read.csv("./pml-training.csv", na.strings=c("NA","#DIV/0!", ""))
+testingdata<-read.csv("./pml-testing.csv", na.strings=c("NA","#DIV/0!", ""))
+```
+
+Looking at the variables, we can see that there 2 cases that we could probably analyze to clean up
+
+- Running a str command we see that the first 7 variables are not relevant for the analysis (ie row_id or timestamps)
+- Just running a simple summary we see that there variables with many NAs. 
+
+We will remove the first lines, but also we will start the study getting rid of the variables with NAs, then we will see if our model is enough accurate or we need to go include variables with NAs.
+```{r Clean up}
+trainingdata <-trainingdata[,-c(1:7)]
+testingdata <-testingdata[,-c(1:7)]
+trainingdata<-trainingdata[,colSums(is.na(trainingdata)) == 0]
+```
+
+### 2 Crossvalidation sets creation
+
+Since we don't now the actual results for the testing set, we will split the training set in order to obtain one set for the training of the model (70% of the training observations) and another one to validate (30% of the training observations) ourselves the models.
+
+```{r crossvalidation}
+trainChunk <- createDataPartition(y=trainingdata$classe,p=.70,list=F)
+training <- trainingdata[trainChunk,]
+validation <- trainingdata[-trainChunk,]
+```
+
+We could also see the boxplot in appendix A showing this initial feeling.
+
+### 3 Models creation
+We are going to create 3 different types of models.
+
+Random Forest
+```{r random forest}
+mod_rf<-train(classe~., method="rf", data=training)
+```
+Boosted Predictor
+```{r gbm}
+mod_gbm<-train(classe~., method="gbm", data=training, verbose=FALSE)
+```
+Multivariate
+```{r lda}
+mod_lda<-train(classe~., method="lda", data=training)
+```
+Let's have a look on the results in the training set.
+```{r models}
+mod_rf
+mod_gbm
+mod_lda
+```
+
+### 4 Models evaluation
+Now we are going to test the models with the validation set we created with the initial set of training data. Once the prediction is created, we will check the confusion matrixes.
+```{r validation prediction}
+pred_rf<-predict(mod_rf, validation)
+pred_gbm<-predict(mod_gbm, validation)
+pred_lda<-predict(mod_lda, validation)
+confusionMatrix(pred_rf, validation$classe)$overall[1]
+confusionMatrix(pred_gbm, validation$classe)$overall[1]
+confusionMatrix(pred_lda, validation$classe)$overall[1]
+```
+As we can see in calculating the confusion matrixes of each model, **the hightest accuracy is obtained using Random Forest algorithm.** It is quite high, 0.993 of accuracy with 95% of confidence, we will not create a new model combining several ones.
+
+### 5 Predict values for test data
+
+```{r testing data prediction}
+pred_rf_test<-predict(mod_rf, testingdata)
+pred_rf_test
+
+```
+
